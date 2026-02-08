@@ -75,6 +75,20 @@
                             <div class="text-danger-600 text-sm mt-8">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="col-xl-4 col-sm-6 d-flex align-items-center">
+    <div class="form-check mt-24">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            name="is_chairperson"
+            value="1"
+            id="is_chairperson"
+            {{ old('is_chairperson', $member->is_chairperson) ? 'checked' : '' }} >
+        <label class="form-check-label text-sm fw-semibold text-primary-light" for="is_chairperson">
+            Chairperson
+        </label>
+    </div>
+</div>
 
                     <div class="col-12">
                         <div class="d-flex align-items-center justify-content-end gap-3 mt-8">

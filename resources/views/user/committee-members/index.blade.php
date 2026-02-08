@@ -56,15 +56,20 @@
 
                                 <td>
                                     <div>
-                                        <h6 class="text-md mb-4 fw-medium text-secondary-light">
-                                            {{ $member->name }}
+                                        <div class="d-flex align-items-center flex-wrap gap-8">
+                                            <h6 class="text-md mb-0 fw-medium text-secondary-light">
+                                                {{ $member->member_name }}
+                                            </h6>
+
                                             @if($member->is_chairperson)
-                                                <span class="badge bg-primary-600 ms-8">Chairperson</span>
+                                                <span class="badge bg-primary-600 radius-8 px-12 py-6 text-sm">
+                                                    Chairperson
+                                                </span>
                                             @endif
-                                        </h6>
+                                        </div>
 
                                         @if(!empty($member->qualifications))
-                                            <div class="text-sm text-secondary-light">
+                                            <div class="text-sm text-secondary-light mt-4">
                                                 {{ $member->qualifications }}
                                             </div>
                                         @endif
