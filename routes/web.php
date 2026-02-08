@@ -9,20 +9,27 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\SuperUserDashboardController;
 use App\Http\Controllers\SystemAdminDashboardController;
-use App\Http\Controllers\User\TeamMemberController;
+
+// Front controllers
 use App\Http\Controllers\Front\TeamController;
-use App\Http\Controllers\Admin\HomeIntroController;
-use App\Http\Controllers\Admin\NewsPostController;
 use App\Http\Controllers\Front\NewsController;
 use App\Http\Controllers\Front\ContactController;
-use App\Http\Controllers\User\ContactCmsController;
 use App\Http\Controllers\Front\GovernanceController;
+use App\Http\Controllers\Front\DepartmentController as FrontDepartmentController;
+use App\Http\Controllers\Front\PensionBenefitsController;
+
+// User/Admin controllers (your "admin side" is role:user)
+use App\Http\Controllers\Admin\HomeIntroController;
+use App\Http\Controllers\Admin\NewsPostController;
+
+use App\Http\Controllers\User\ContactCmsController;
 use App\Http\Controllers\User\GovernancePageController;
 use App\Http\Controllers\User\CommitteeController;
 use App\Http\Controllers\User\CommitteeMemberController;
 use App\Http\Controllers\User\PersonController;
+use App\Http\Controllers\User\TeamMemberController;
 use App\Http\Controllers\User\DepartmentController as UserDepartmentController;
-use App\Http\Controllers\Front\DepartmentController as FrontDepartmentController;
+use App\Http\Controllers\User\PensionBenefitPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,22 +40,32 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+
 Route::get('/history', [HomeController::class, 'history'])->name('history');
 Route::get('/identity', [HomeController::class, 'identity'])->name('identity');
+
 Route::get('/governance', [GovernanceController::class, 'index'])->name('governance');
+
 Route::get('/team', [TeamController::class, 'index'])->name('front.team');
+
 Route::get('/departments', [FrontDepartmentController::class, 'index'])->name('front.departments');
 Route::get('/departments/{slug}', [FrontDepartmentController::class, 'show'])->name('front.departments.show');
+
+Route::get('/pension-benefits', [PensionBenefitsController::class, 'index'])->name('front.pension-benefits');
+
+// News public details
+Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
+
+
 /*
 |--------------------------------------------------------------------------
 | Default Breeze Dashboard (optional)
 |--------------------------------------------------------------------------
-| If you are using your own role dashboards (/user/dashboard etc),
-| you can remove this /dashboard route completely if not needed.
 */
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -86,86 +103,82 @@ Route::middleware(['auth'])->group(function () {
         ->name('systemadmin.dashboard');
 });
 
+
 /*
 |--------------------------------------------------------------------------
-| Admin CMS Routes (Home Intro + News)
-|--------------------------------------------------------------------------
-| These should NOT be accessible to normal users.
+| User CMS / Admin-side Routes (role:user)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:user'])
-    ->prefix('user')
+Route::prefix('user')
     ->name('user.')
+    ->middleware(['auth', 'role:user'])
     ->group(function () {
 
+        /*
+        | Home Intro CMS
+        */
         Route::get('/home-intro', [HomeIntroController::class, 'edit'])->name('home-intro.edit');
         Route::put('/home-intro', [HomeIntroController::class, 'update'])->name('home-intro.update');
 
-        Route::resource('/news-posts', NewsPostController::class)->except(['show']);
-    });
+        /*
+        | News Posts CRUD
+        */
+        Route::resource('news-posts', NewsPostController::class)->except(['show']);
 
-    Route::middleware(['auth', 'role:user'])
-    ->prefix('user')
-    ->name('user.')
-    ->group(function () {
-
+        /*
+        | Contact CMS + Messages
+        */
         Route::get('/contact-settings', [ContactCmsController::class, 'edit'])->name('contact-settings.edit');
         Route::put('/contact-settings', [ContactCmsController::class, 'update'])->name('contact-settings.update');
 
         Route::get('/contact-messages', [ContactCmsController::class, 'messages'])->name('contact-messages.index');
         Route::get('/contact-messages/{contactMessage}', [ContactCmsController::class, 'showMessage'])->name('contact-messages.show');
         Route::delete('/contact-messages/{contactMessage}', [ContactCmsController::class, 'deleteMessage'])->name('contact-messages.destroy');
+
+        /*
+        | Governance CMS
+        */
+        Route::get('/governance', [GovernancePageController::class, 'edit'])->name('governance.edit');
+        Route::put('/governance', [GovernancePageController::class, 'update'])->name('governance.update');
+
+        /*
+        | Departments CRUD (Admin side)
+        */
+        Route::resource('departments', UserDepartmentController::class)->except(['show']);
+
+        /*
+        | Committees CRUD + Members nested CRUD
+        */
+        Route::resource('committees', CommitteeController::class)->except(['show']);
+
+        Route::prefix('committees/{committee}')->group(function () {
+            Route::get('members', [CommitteeMemberController::class, 'index'])->name('committees.members.index');
+            Route::get('members/create', [CommitteeMemberController::class, 'create'])->name('committees.members.create');
+            Route::post('members', [CommitteeMemberController::class, 'store'])->name('committees.members.store');
+            Route::get('members/{member}/edit', [CommitteeMemberController::class, 'edit'])->name('committees.members.edit');
+            Route::put('members/{member}', [CommitteeMemberController::class, 'update'])->name('committees.members.update');
+            Route::delete('members/{member}', [CommitteeMemberController::class, 'destroy'])->name('committees.members.destroy');
+        });
+
+        /*
+        | People CRUD
+        */
+        Route::resource('people', PersonController::class)->except(['show']);
+
+        /*
+        | Team Members CRUD
+        */
+        Route::resource('team-members', TeamMemberController::class)->except(['show']);
+
+        /*
+        | Pension Benefits CMS (single edit page)
+        */
+        Route::get('pension-benefits/edit', [PensionBenefitPageController::class, 'edit'])
+            ->name('pension-benefits.edit');
+
+        Route::put('pension-benefits', [PensionBenefitPageController::class, 'update'])
+            ->name('pension-benefits.update');
     });
-
-    
-    Route::middleware(['auth', 'role:user'])
-        ->prefix('user')
-        ->name('user.')
-        ->group(function () {
-    
-            // Governance overview edit/update
-            Route::get('/governance', [GovernancePageController::class, 'edit'])->name('governance.edit');
-            Route::put('/governance', [GovernancePageController::class, 'update'])->name('governance.update');
-            //department
-            Route::resource('departments', UserDepartmentController::class)->except(['show']);
-            // Committees CRUD
-            Route::resource('/committees', CommitteeController::class)->except(['show']);
-    
-            // Nested members CRUD
-            Route::get('/committees/{committee}/members', [CommitteeMemberController::class,'index'])->name('committees.members.index');
-            Route::get('/committees/{committee}/members/create', [CommitteeMemberController::class,'create'])->name('committees.members.create');
-            Route::post('/committees/{committee}/members', [CommitteeMemberController::class,'store'])->name('committees.members.store');
-            Route::get('/committees/{committee}/members/{member}/edit', [CommitteeMemberController::class,'edit'])->name('committees.members.edit');
-            Route::put('/committees/{committee}/members/{member}', [CommitteeMemberController::class,'update'])->name('committees.members.update');
-            Route::delete('/committees/{committee}/members/{member}', [CommitteeMemberController::class,'destroy'])->name('committees.members.destroy');
-            
-            Route::resource('people', \App\Http\Controllers\User\PersonController::class)->except(['show']);
-
-            //team member
-            Route::resource('team-members', TeamMemberController::class);
-        });
-    
-        Route::prefix('user')->name('user.')->middleware(['auth','role:user'])->group(function () {
-
-            Route::resource('committees', CommitteeController::class)->except(['show']);
-        
-            Route::prefix('committees/{committee}')->group(function () {
-                Route::get('members', [CommitteeMemberController::class, 'index'])->name('committees.members.index');
-                Route::get('members/create', [CommitteeMemberController::class, 'create'])->name('committees.members.create');
-                Route::post('members', [CommitteeMemberController::class, 'store'])->name('committees.members.store');
-                Route::get('members/{member}/edit', [CommitteeMemberController::class, 'edit'])->name('committees.members.edit');
-                Route::put('members/{member}', [CommitteeMemberController::class, 'update'])->name('committees.members.update');
-                Route::delete('members/{member}', [CommitteeMemberController::class, 'destroy'])->name('committees.members.destroy');
-            });
-
-          
-                Route::resource('departments', UserDepartmentController::class)->except(['show']);
-        
-            
-        });
-        
-
-    Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
 
 require __DIR__ . '/auth.php';
