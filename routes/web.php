@@ -9,8 +9,8 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\SuperUserDashboardController;
 use App\Http\Controllers\SystemAdminDashboardController;
-use App\Http\Controllers\TeamMemberController;
-use App\Http\Controllers\FrontTeamController;
+use App\Http\Controllers\User\TeamMemberController;
+use App\Http\Controllers\Front\TeamController;
 use App\Http\Controllers\Admin\HomeIntroController;
 use App\Http\Controllers\Admin\NewsPostController;
 use App\Http\Controllers\Front\NewsController;
@@ -34,11 +34,7 @@ Route::post('/contact', [ContactController::class, 'submit'])->name('contact.sub
 Route::get('/history', [HomeController::class, 'history'])->name('history');
 Route::get('/identity', [HomeController::class, 'identity'])->name('identity');
 Route::get('/governance', [GovernanceController::class, 'index'])->name('governance');
-
-
-// Front display page
-Route::get('/team', [FrontTeamController::class, 'index'])->name('team');
-
+Route::get('/team', [TeamController::class, 'index'])->name('front.team');
 /*
 |--------------------------------------------------------------------------
 | Default Breeze Dashboard (optional)
@@ -102,9 +98,6 @@ Route::middleware(['auth', 'role:user'])
         Route::put('/home-intro', [HomeIntroController::class, 'update'])->name('home-intro.update');
 
         Route::resource('/news-posts', NewsPostController::class)->except(['show']);
-
-        // Admin CRUD
-        Route::resource('team-members', TeamMemberController::class);
     });
 
     Route::middleware(['auth', 'role:user'])
@@ -143,6 +136,8 @@ Route::middleware(['auth', 'role:user'])
             
             Route::resource('people', \App\Http\Controllers\User\PersonController::class)->except(['show']);
 
+            //team member
+            Route::resource('team-members', TeamMemberController::class);
         });
     
         Route::prefix('user')->name('user.')->middleware(['auth','role:user'])->group(function () {
