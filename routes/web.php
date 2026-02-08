@@ -21,6 +21,8 @@ use App\Http\Controllers\User\GovernancePageController;
 use App\Http\Controllers\User\CommitteeController;
 use App\Http\Controllers\User\CommitteeMemberController;
 use App\Http\Controllers\User\PersonController;
+use App\Http\Controllers\User\DepartmentController as UserDepartmentController;
+use App\Http\Controllers\Front\DepartmentController as FrontDepartmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,8 @@ Route::get('/history', [HomeController::class, 'history'])->name('history');
 Route::get('/identity', [HomeController::class, 'identity'])->name('identity');
 Route::get('/governance', [GovernanceController::class, 'index'])->name('governance');
 Route::get('/team', [TeamController::class, 'index'])->name('front.team');
+Route::get('/departments', [FrontDepartmentController::class, 'index'])->name('front.departments');
+Route::get('/departments/{slug}', [FrontDepartmentController::class, 'show'])->name('front.departments.show');
 /*
 |--------------------------------------------------------------------------
 | Default Breeze Dashboard (optional)
@@ -122,7 +126,8 @@ Route::middleware(['auth', 'role:user'])
             // Governance overview edit/update
             Route::get('/governance', [GovernancePageController::class, 'edit'])->name('governance.edit');
             Route::put('/governance', [GovernancePageController::class, 'update'])->name('governance.update');
-    
+            //department
+            Route::resource('departments', UserDepartmentController::class)->except(['show']);
             // Committees CRUD
             Route::resource('/committees', CommitteeController::class)->except(['show']);
     
@@ -152,6 +157,11 @@ Route::middleware(['auth', 'role:user'])
                 Route::put('members/{member}', [CommitteeMemberController::class, 'update'])->name('committees.members.update');
                 Route::delete('members/{member}', [CommitteeMemberController::class, 'destroy'])->name('committees.members.destroy');
             });
+
+          
+                Route::resource('departments', UserDepartmentController::class)->except(['show']);
+        
+            
         });
         
 
