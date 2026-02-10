@@ -56,6 +56,14 @@ Route::get('/pension-benefits', [PensionBenefitsController::class, 'index'])->na
 // News public details
 Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
+Route::get('/membership-cycle', [\App\Http\Controllers\Front\MembershipCycleController::class, 'index'])
+    ->name('front.membership-cycle');
+
+
+    Route::get('/active-members', [\App\Http\Controllers\Front\ActiveMembersController::class, 'index'])
+    ->name('front.active-members');
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -178,7 +186,20 @@ Route::prefix('user')
 
         Route::put('pension-benefits', [PensionBenefitPageController::class, 'update'])
             ->name('pension-benefits.update');
+
+
+            Route::get('membership-cycle/edit', [\App\Http\Controllers\User\MembershipCyclePageController::class, 'edit'])
+            ->name('membership-cycle.edit');
+    
+        Route::put('membership-cycle', [\App\Http\Controllers\User\MembershipCyclePageController::class, 'update'])
+            ->name('membership-cycle.update');
+
+            Route::resource('active-members', \App\Http\Controllers\User\ActiveMemberImageController::class)
+            ->parameters(['active-members' => 'active_member'])
+            ->except(['show']);
+        
     });
 
+    
 
 require __DIR__ . '/auth.php';
