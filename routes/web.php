@@ -30,6 +30,7 @@ use App\Http\Controllers\User\PersonController;
 use App\Http\Controllers\User\TeamMemberController;
 use App\Http\Controllers\User\DepartmentController as UserDepartmentController;
 use App\Http\Controllers\User\PensionBenefitPageController;
+use App\Http\Controllers\Front\FinancialPerformanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +64,20 @@ Route::get('/membership-cycle', [\App\Http\Controllers\Front\MembershipCycleCont
     Route::get('/active-members', [\App\Http\Controllers\Front\ActiveMembersController::class, 'index'])
     ->name('front.active-members');
 
+    Route::get('/pensioners', [\App\Http\Controllers\Front\PensionersController::class, 'index'])
+    ->name('front.pensioners');
 
+    Route::get('/complaints-handling-procedure', [\App\Http\Controllers\Front\ComplaintProcedureController::class, 'index'])
+    ->name('front.complaints-procedure');
+
+    Route::get('/financial-performance', [\App\Http\Controllers\Front\FinancialPerformanceController::class, 'index'])
+    ->name('front.financial-performance');
+
+    Route::get('/financial-performance/pdf/view', [FinancialPerformanceController::class, 'viewPdf'])
+    ->name('front.financial-performance.pdf.view');
+
+Route::get('/financial-performance/pdf/download', [FinancialPerformanceController::class, 'downloadPdf'])
+    ->name('front.financial-performance.pdf.download');
 
 /*
 |--------------------------------------------------------------------------
@@ -197,7 +211,25 @@ Route::prefix('user')
             Route::resource('active-members', \App\Http\Controllers\User\ActiveMemberImageController::class)
             ->parameters(['active-members' => 'active_member'])
             ->except(['show']);
-        
+
+            Route::resource('pensioners', \App\Http\Controllers\User\PensionerImageController::class)
+    ->parameters(['pensioners' => 'pensioner'])
+    ->except(['show']);
+
+    Route::get('complaints-handling-procedure/edit', [\App\Http\Controllers\User\ComplaintProcedurePageController::class, 'edit'])
+    ->name('complaints-procedure.edit');
+
+Route::put('complaints-handling-procedure', [\App\Http\Controllers\User\ComplaintProcedurePageController::class, 'update'])
+    ->name('complaints-procedure.update');
+
+
+    Route::get('financial-performance/edit', [\App\Http\Controllers\User\FinancialPerformancePageController::class, 'edit'])
+    ->name('financial-performance.edit');
+
+Route::put('financial-performance', [\App\Http\Controllers\User\FinancialPerformancePageController::class, 'update'])
+    ->name('financial-performance.update');
+
+
     });
 
     
